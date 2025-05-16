@@ -1,12 +1,24 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config'; // 👈 gerekli
 import { AuthModule } from './auth/auth.module';
-import { UsersController } from './users/users.controller'; 
+import { UsersController } from './users/users.controller';
+import { UsersService } from './users/users.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './users/user.entity';
 
 @Module({
-  imports: [AuthModule],
-  controllers: [AppController, UsersController], // bu hatayı düzelt
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }), // ✅ GLOBAL TANIM
+    TypeOrmModule.forRoot({
+      type: 'sqlite',
+      database: 'db.sqlite',
+      entities: [User],
+      synchronize: true,
+    }),
+    TypeOrmModule.forFeature([User]),
+    AuthModule,
+  ],
+  controllers: [UsersController],
+  providers: [UsersService],
 })
 export class AppModule {}
