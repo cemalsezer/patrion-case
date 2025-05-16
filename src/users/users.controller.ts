@@ -6,8 +6,9 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { Request } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common'; 
 import { ApiBearerAuth, ApiOperation, ApiBody, ApiParam } from '@nestjs/swagger';
-import { ChangePasswordDto } from '../auth/dto/change-password.dto'; // Import the ChangePasswordDto
+import { ChangePasswordDto } from '../auth/dto/change-password.dto'; 
 import { UpdateUserDto } from '../auth/dto/update-user.dto';
+import { UserLogService } from '../user-log/user-log.service'; 
 
 
 
@@ -15,36 +16,48 @@ import { UpdateUserDto } from '../auth/dto/update-user.dto';
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard) 
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly userLogService: UserLogService, 
+  
+  ) {}
 
 
   @Get()
   @Roles('SystemAdmin') 
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all users (admin only)' }) 
-  findAll() {
+  async findAll(@Request() req) {
+    await this.userLogService.createLog(req.user.userId, 'viewed_all_users'); 
     return this.usersService.findAll();
   }
 
   @Get('me')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
-  getProfile(@Request() req) {
+  async getProfile(@Request() req) {
     const userId = Number(req.user.userId);
     if (isNaN(userId)) {
       throw new BadRequestException('Geçersiz kullanıcı ID');
     }
+
+    await this.userLogService.createLog(userId, 'viewed_own_profile');
     return this.usersService.findOne(userId);
   }
 
-    @Patch('me')
-    async updateProfile(@Request() req, @Body() body: any) {
-    const id = Number(req.user.userId);
-    if (isNaN(id)) {
-      throw new BadRequestException('Geçersiz kullanıcı ID');
-    }
-    return this.usersService.update(id, body);
-  }
+
+
+  //   @Patch('me')
+  //   @ApiBearerAuth()
+  //   @ApiOperation({ summary: 'Update current user profile' })
+  //   @ApiBody({ type: UpdateUserDto })
+  //   async updateProfile(@Request() req, @Body() body: any) {
+  //   const id = Number(req.user.userId);
+  //   if (isNaN(id)) {
+  //     throw new BadRequestException('Geçersiz kullanıcı ID');
+  //   }
+  //   return this.usersService.update(id, body);
+  // }
 
   @Patch('me/password')
   @ApiBearerAuth()
