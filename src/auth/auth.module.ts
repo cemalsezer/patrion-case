@@ -12,7 +12,7 @@ import { PassportModule } from '@nestjs/passport';
   imports: [
     PassportModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule], // ⬅ gerekli
+      imports: [ConfigModule], 
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.get('JWT_SECRET'),

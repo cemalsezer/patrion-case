@@ -8,7 +8,7 @@ import { User } from './users/user.entity';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), // ✅ GLOBAL TANIM
+    ConfigModule.forRoot({ isGlobal: true }), 
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'db.sqlite',
